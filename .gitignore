@@ -1,0 +1,28 @@
+# Environment variables (contains API keys - DO NOT commit)
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Uploaded/temporary financial documents
+data/financial_document_*.pdf
+
+# Output files
+outputs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
