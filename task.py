@@ -6,8 +6,9 @@ from tools import search_tool, read_data_tool
 
 ## Creating a task to verify the document
 verification = Task(
-    description="Verify that the uploaded document is a valid financial document.\n\
-Read the document carefully and identify: the company name, reporting period, document type (10-K, 10-Q, earnings release, etc.).\n\
+    description="Verify that the uploaded document at {file_path} is a valid financial document.\n\
+Use the Financial Document Reader tool with path='{file_path}' to read the document.\n\
+Identify: the company name, reporting period, document type (10-K, 10-Q, earnings release, etc.).\n\
 Confirm that it contains actual financial data such as revenue, expenses, assets, liabilities, etc.\n\
 Provide a brief summary of what the document contains.",
 
@@ -25,8 +26,9 @@ Provide a brief summary of what the document contains.",
 
 ## Creating a task to help solve user's query
 analyze_financial_document = Task(
-    description="Analyze the financial document thoroughly to answer the user's query: {query}\n\
-Read the document carefully and extract key financial metrics including revenue, net income, EPS, margins, and other relevant data.\n\
+    description="Analyze the financial document at {file_path} thoroughly to answer the user's query: {query}\n\
+Use the Financial Document Reader tool with path='{file_path}' to read the document.\n\
+Extract key financial metrics including revenue, net income, EPS, margins, and other relevant data.\n\
 Provide detailed analysis with specific numbers and trends from the document.\n\
 Search the internet for relevant market context and comparable company data.\n\
 Base all analysis on actual data found in the document.",
@@ -47,8 +49,9 @@ Base all analysis on actual data found in the document.",
 
 ## Creating an investment analysis task
 investment_analysis = Task(
-    description="Based on the financial analysis of the document, provide investment recommendations.\n\
+    description="Based on the financial analysis of the document at {file_path}, provide investment recommendations.\n\
 Consider the user's query: {query}\n\
+Use the Financial Document Reader tool with path='{file_path}' if additional document details are needed.\n\
 Evaluate the company's financial health, growth prospects, competitive position, and valuation.\n\
 Search the internet for current market conditions, analyst ratings, and comparable company valuations.\n\
 Provide balanced recommendations considering both opportunities and risks.",
@@ -70,8 +73,9 @@ Provide balanced recommendations considering both opportunities and risks.",
 
 ## Creating a risk assessment task
 risk_assessment = Task(
-    description="Conduct a comprehensive risk assessment based on the financial document.\n\
+    description="Conduct a comprehensive risk assessment based on the financial document at {file_path}.\n\
 Evaluate the user's query context: {query}\n\
+Use the Financial Document Reader tool with path='{file_path}' if additional document details are needed.\n\
 Identify and analyze key risk factors including financial risks, operational risks, market risks, and regulatory risks.\n\
 Assess the company's debt levels, liquidity position, and financial stability.\n\
 Search for industry-specific risk factors and macroeconomic considerations.",

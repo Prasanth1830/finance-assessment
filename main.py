@@ -10,11 +10,12 @@ from task import verification, analyze_financial_document, investment_analysis, 
 app = FastAPI(title="Financial Document Analyzer")
 
 def run_crew(query: str, file_path: str = "data/sample.pdf"):
-    """To run the whole crew"""
+    """Run the full multi-agent crew pipeline on the given financial document."""
     financial_crew = Crew(
         agents=[verifier, financial_analyst, investment_advisor, risk_assessor],
         tasks=[verification, analyze_financial_document, investment_analysis, risk_assessment],
         process=Process.sequential,
+        verbose=True,
     )
     
     result = financial_crew.kickoff({'query': query, 'file_path': file_path})
@@ -48,8 +49,8 @@ async def analyze_document_endpoint(
         if query is None or query == "":
             query = "Analyze this financial document for investment insights"
             
-        # Process the financial document with all analysts
-        response = run_crew(query=query.strip(), file_path=file_path)
+        # Run the crew pipeline in a thread to avoid blocking the async event loop
+        response = await asyncio.to_thread(run_crew, query.strip(), file_path)
         
         return {
             "status": "success",
@@ -71,4 +72,4 @@ async def analyze_document_endpoint(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
