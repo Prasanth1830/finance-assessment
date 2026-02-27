@@ -43,4 +43,5 @@ pillow
 protobuf
 pypdf
 python-dotenv
+python-multipart
 uvicorn
