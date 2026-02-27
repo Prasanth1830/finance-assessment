@@ -8,7 +8,7 @@ A comprehensive financial document analysis system that processes corporate repo
 
 ## Bugs Found and How They Were Fixed
 
-A total of **25 bugs** were identified and fixed across all project files.
+A total of **30 bugs** were identified and fixed across all project files.
 
 ---
 
@@ -448,6 +448,68 @@ pip install -r requirements.txt
 
 ---
 
+### `task.py` — 1 Additional Critical Bug Fixed
+
+---
+
+#### Bug 28 — All task descriptions missing `{file_path}` — agents always read the wrong file
+**Buggy:**
+```python
+verification = Task(
+    description="Verify that the uploaded document is a valid financial document.\n\
+Read the document carefully...",
+    ...
+)
+```
+**Fixed:**
+```python
+verification = Task(
+    description="Verify that the uploaded document at {file_path} is a valid financial document.\n\
+Use the Financial Document Reader tool with path='{file_path}' to read the document.\n\
+...",
+    ...
+)
+```
+**Explanation:** This was the most critical runtime bug. The crew's `kickoff()` receives `{'query': query, 'file_path': file_path}` as inputs. CrewAI uses these to interpolate `{variable}` placeholders in task descriptions. Without `{file_path}` in any task description, **every agent always falls back to the tool's default path `data/sample.pdf`** — completely ignoring the file actually uploaded by the user. This was fixed by adding explicit `{file_path}` references to ALL four task descriptions, instructing each agent to use the Financial Document Reader tool with the correct file path.
+
+---
+
+### `main.py` — 2 Additional Bugs Fixed
+
+---
+
+#### Bug 29 — `run_crew()` (synchronous) called directly inside `async` FastAPI endpoint — blocks event loop
+**Buggy:**
+```python
+@app.post("/analyze")
+async def analyze_document_endpoint(...):
+    ...
+    response = run_crew(query.strip(), file_path)  # BLOCKS the entire event loop!
+```
+**Fixed:**
+```python
+@app.post("/analyze")
+async def analyze_document_endpoint(...):
+    ...
+    response = await asyncio.to_thread(run_crew, query.strip(), file_path)
+```
+**Explanation:** `run_crew()` is a long-running synchronous function (AI analysis can take 2–5 minutes). Calling it directly inside an `async` FastAPI endpoint blocks the entire uvicorn event loop, making the server unresponsive to any other requests. `asyncio.to_thread()` runs it in a separate thread, keeping the async event loop free.
+
+---
+
+#### Bug 30 — `python-multipart` missing from `requirements.txt`
+**Buggy:**
+```
+# requirements.txt had no python-multipart
+```
+**Fixed:**
+```
+python-multipart
+```
+**Explanation:** FastAPI requires `python-multipart` to handle `UploadFile` and `Form` request parameters in the `POST /analyze` endpoint. Without it, every file upload attempt fails with `422 Unprocessable Entity: Form data requires python-multipart to be installed`. This is a hidden dependency of FastAPI not installed by default.
+
+---
+
 ## Bug Fix Summary Table
 
 | # | File | Line(s) | Bug | Fix Applied |
@@ -479,6 +541,9 @@ pip install -r requirements.txt
 | 25 | `task.py` | 70–81 | `verification` task used `financial_analyst` instead of `verifier` | Assigned to `verifier` agent |
 | 26 | `README.md` | 10 | Typo: `requirement.txt` | Fixed to `requirements.txt` |
 | 27 | `README.md` | 23 | Debug placeholder "You're All Not Set!" left in docs | Removed entirely |
+| 28 | `task.py` | All tasks | `{file_path}` missing from task descriptions — agents always read `data/sample.pdf` instead of uploaded file | Added `{file_path}` to all 4 task descriptions |
+| 29 | `main.py` | 52 | Synchronous `run_crew()` called directly in `async` endpoint — blocks event loop | Wrapped with `asyncio.to_thread()` |
+| 30 | `requirements.txt` | — | `python-multipart` missing — FastAPI can't handle file uploads | Added `python-multipart` |
 
 ---
 
